@@ -14,8 +14,6 @@ const DEFAULT_PORT = 9001
 
 var version string
 
-type SleepControl int
-
 var flagHelp = flag.Bool("help", false, "displays this help message")
 var flagPort = flag.Int("port", DEFAULT_PORT, "RPC server listening port")
 var flagDisplay = flag.Bool("display", false, "Force display to stay on")
@@ -26,12 +24,6 @@ func init() {
 	flag.IntVar(flagPort, "p", DEFAULT_PORT, "")
 	flag.BoolVar(flagDisplay, "d", false, "")
 	flag.BoolVar(flagVersion, "v", false, "")
-}
-
-func (c *SleepControl) AllowSleep(args *struct{}, reply *struct{}) error {
-	log.Println("AllowSleep RPC called — clearing sleep flags.")
-	ClearSleepFlags()
-	return nil
 }
 
 func main() {
@@ -61,7 +53,8 @@ func main() {
 	}
 
 	// register RPC
-	sleepCtrl := new(SleepControl)
+	shutdownChan := make(chan bool)
+	sleepCtrl := &SleepControl{shutdown: shutdownChan}
 	rpc.Register(sleepCtrl)
 
 	// configure listener
@@ -73,5 +66,12 @@ func main() {
 	defer listener.Close()
 
 	log.Printf("Nosleep RPC server listening on %s", address)
-	rpc.Accept(listener)
+
+	// Accept connections until shutdown is triggered
+	go func() {
+		rpc.Accept(listener)
+	}()
+
+	<-shutdownChan
+	log.Println("Server shutdown complete.")
 }
