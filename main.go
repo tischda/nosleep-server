@@ -27,6 +27,33 @@ func init() {
 }
 
 func main() {
+	flag.Usage = func() {
+		fmt.Fprintln(os.Stderr, "Usage: "+PROG_NAME+` [--port <port>] [--display]  | --version | --help
+
+Sets ThreadExecutionState to (ES_CONTINUOUS | ES_SYSTEM_REQUIRED) and
+starts an RPC server on 127.0.0.1:`+fmt.Sprintf("%d", DEFAULT_PORT)+`.
+
+You can manage the server using RPC calls to control thread execution states
+where possible methods are: Sleep, Display, System, Critical, and Shutdown.
+
+OPTIONS:
+
+  -d, -display
+        Force display to stay on
+  -h, -help
+        displays this help message
+  -p, -port int
+        RPC server listening port (default 9001)
+  -v, -version
+        print version and exit
+
+EXAMPLES:`)
+
+		fmt.Fprintln(os.Stderr, "  "+PROG_NAME+` --port 9015 --display
+
+  will set ThreadExecutionState to (ES_CONTINUOUS | ES_SYSTEM_REQUIRED | ES_DISPLAY_REQUIRED)
+  and start an RPC server listening on 127.0.0.1:9015.`)
+	}
 	flag.Parse()
 
 	if flag.Arg(0) == "version" || *flagVersion {
