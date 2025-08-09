@@ -34,7 +34,7 @@ Sets ThreadExecutionState to (ES_CONTINUOUS | ES_SYSTEM_REQUIRED) and
 starts an RPC server on 127.0.0.1:`+fmt.Sprintf("%d", DEFAULT_PORT)+`.
 
 You can manage the server using RPC calls to control thread execution states
-where possible methods are: Sleep, Display, System, Critical, and Shutdown.
+where possible methods are: Clear, Display, System, Critical, Read and Shutdown.
 
 OPTIONS:
 
@@ -49,7 +49,7 @@ OPTIONS:
 
 EXAMPLES:`)
 
-		fmt.Fprintln(os.Stderr, "  "+PROG_NAME+` --port 9015 --display
+		fmt.Fprintln(os.Stderr, "\n  "+PROG_NAME+` --port 9015 --display
 
   will set ThreadExecutionState to (ES_CONTINUOUS | ES_SYSTEM_REQUIRED | ES_DISPLAY_REQUIRED)
   and start an RPC server listening on 127.0.0.1:9015.`)
@@ -90,7 +90,6 @@ EXAMPLES:`)
 	if err != nil {
 		log.Fatalf("Failed to listen on %s: %v", address, err)
 	}
-	defer listener.Close()
 
 	log.Printf("Nosleep RPC server listening on %s", address)
 

@@ -9,8 +9,12 @@ type SleepControl struct {
 	shutdown chan bool
 }
 
-func (c *SleepControl) Sleep(args *struct{}, reply *struct{}) error {
-	log.Println("Sleep RPC called — clearing sleep flags")
+type ReadFlagsReply struct {
+	Flags uint32
+}
+
+func (c *SleepControl) Clear(args *struct{}, reply *struct{}) error {
+	log.Println("Clear RPC called — clearing sleep flags")
 	ClearSleepFlags()
 	return nil
 }
@@ -30,6 +34,12 @@ func (c *SleepControl) System(args *struct{}, reply *struct{}) error {
 func (c *SleepControl) Critical(args *struct{}, reply *struct{}) error {
 	log.Println("Critical RPC called — forcing system critical on")
 	ForceSystemCriticalOn()
+	return nil
+}
+
+func (c *SleepControl) Read(args *struct{}, reply *ReadFlagsReply) error {
+	log.Println("Read RPC called — reading current flags")
+	reply.Flags = ReadFlags()
 	return nil
 }
 

@@ -24,8 +24,59 @@ go install github.com/tischda/nosleep-server@latest
 ### Usage
 
 ~~~
+Usage: nosleep-server [--port <port>] [--display]  | --version | --help
+
+Sets ThreadExecutionState to (ES_CONTINUOUS | ES_SYSTEM_REQUIRED) and
+starts an RPC server on 127.0.0.1:9001.
+
+You can manage the server using RPC calls to control thread execution states
+where possible methods are: Clear, Display, System, Critical, Read and Shutdown.
+
+OPTIONS:
+
+  -d, -display
+        Force display to stay on
+  -h, -help
+        displays this help message
+  -p, -port int
+        RPC server listening port (default 9001)
+  -v, -version
+        print version and exit
+
+EXAMPLES:
+
+  nosleep-server --port 9015 --display
+
+  will set ThreadExecutionState to (ES_CONTINUOUS | ES_SYSTEM_REQUIRED | ES_DISPLAY_REQUIRED)
+  and start an RPC server listening on 127.0.0.1:9015.
 ~~~
+
+You can test the result like this:
+
+~~~
+❯ powercfg -requests
+DISPLAY:
+None.
+
+SYSTEM:
+[PROCESS] \Device\HarddiskVolume5\src\go\nosleep-server\nosleep-server.exe
+
+AWAYMODE:
+None.
+
+EXECUTION:
+None.
+
+PERFBOOST:
+None.
+
+ACTIVELOCKSCREEN:
+None.
+~~~
+
 
 ### References
 
-[mhbitarafan/go_wakelock](/mhbitarafan/go_wakelock)
+* [tischda/nosleep-client](/tischda/nosleep-client)
+* [mhbitarafan/go_wakelock](/mhbitarafan/go_wakelock)
+* [brandonherzog/nosleep](/brandonherzog/nosleep)
