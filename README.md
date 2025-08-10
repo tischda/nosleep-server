@@ -4,14 +4,18 @@ Windows CLI utility (server) that prevents the computer from entering sleep.
 
 The server will prevent the computer from going to sleep by setting
 `SetThreadExecutionState`. The client will communication via RPC with
-the client to change the sleep mode or shutdown the server.
+the server to change the sleep mode or shutdown the server.
 
 The main use case is to prevent sleep during a long running task:
 
-1. start server in the background
+1. start nosleep-server in the background
 2. run task (eg. backup script)
-3. client calls server with shutdown request
+3. nosleep-client calls server with shutdown request
 
+It's important to note that `SetThreadExecutionState` only applies to the
+current thread, so this server runs an `ExecStateManager` that is locked to
+a single OS thread. The RPC server uses this `ExecStateManager` to ensure
+consistent state accross calls.
 
 ### Install
 
@@ -51,7 +55,7 @@ EXAMPLES:
   and start an RPC server listening on 127.0.0.1:9015.
 ~~~
 
-You can test the result like this:
+You can test the result like this (requires admin rights):
 
 ~~~
 ❯ powercfg -requests

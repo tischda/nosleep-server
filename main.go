@@ -71,20 +71,23 @@ EXAMPLES:`)
 		os.Exit(1)
 	}
 
-	// set sleep mode
-	defer ClearSleepFlags()
+	// register RPC with state manager
+	shutdownCh := make(chan struct{})
+	manager := &ExecStateManager{rpcShutdownCh: shutdownCh}
+	manager.Start()
+	defer manager.Stop()
+
+	// set the initial sleep mode
 	if *flagDisplay {
-		ForceDisplayOn()
+		manager.Display(ExecStateRequest{}, &ExecStateReply{})
 	} else {
-		ForceSystemOn()
+		manager.System(ExecStateRequest{}, &ExecStateReply{})
 	}
 
-	// register RPC
-	shutdownChan := make(chan bool)
-	sleepCtrl := &SleepControl{shutdown: shutdownChan}
-	rpc.Register(sleepCtrl)
+	// Register RPC server with ExecStateManager methods
+	rpc.Register(manager)
 
-	// configure listener
+	// Configure listener
 	address := fmt.Sprintf("127.0.0.1:%d", *flagPort)
 	listener, err := net.Listen("tcp", address)
 	if err != nil {
@@ -98,6 +101,8 @@ EXAMPLES:`)
 		rpc.Accept(listener)
 	}()
 
-	<-shutdownChan
+	<-shutdownCh
+	listener.Close()
+
 	log.Println("Server shutdown complete.")
 }
