@@ -60,7 +60,7 @@ OPTIONS:
 nosleep-server --port 9015 --display
 ~~~
 
-will set ThreadExecutionState to (ES_CONTINUOUS | ES_SYSTEM_REQUIRED | ES_DISPLAY_REQUIRED)
+will set ThreadExecutionState to `(ES_CONTINUOUS | ES_SYSTEM_REQUIRED | ES_DISPLAY_REQUIRED)`
 and start an RPC server listening on 127.0.0.1:9015.
 
 You can test the result like this (requires admin rights):
