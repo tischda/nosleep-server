@@ -44,12 +44,16 @@ where possible methods are: Clear, Display, System, Critical, Read and Shutdown.
 
 OPTIONS:
 
+  -n, --network string
+          Network type: tcp, tcp4, tcp6, unix or unixpacket (default "tcp")
+  -a, --address string
+          Bind address (default 127.0.0.1)
   -p, --port int
-        RPC server listening port (default 9001)
+          RPC server listening port (default 9001)
   -d, --display
-        Force display to stay on
+          Force display to stay on
   -?, --help
-        displays this help message
+          displays this help message
   -v, --version
         print version and exit
 ~~~
