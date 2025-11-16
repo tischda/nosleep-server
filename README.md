@@ -1,4 +1,12 @@
-﻿# nosleep-server
+﻿[![Build Status](https://github.com/tischda/nosleep-server/actions/workflows/build.yml/badge.svg)](https://github.com/tischda/nosleep-server/actions/workflows/build.yml)
+[![Test Status](https://github.com/tischda/nosleep-server/actions/workflows/test.yml/badge.svg)](https://github.com/tischda/nosleep-server/actions/workflows/test.yml)
+[![Coverage Status](https://coveralls.io/repos/tischda/nosleep-server/badge.svg)](https://coveralls.io/r/tischda/nosleep-server)
+[![Linter Status](https://github.com/tischda/nosleep-server/actions/workflows/linter.yml/badge.svg)](https://github.com/tischda/nosleep-server/actions/workflows/linter.yml)
+[![License](https://img.shields.io/github/license/tischda/nosleep-server)](/LICENSE)
+[![Release](https://img.shields.io/github/release/tischda/nosleep-server.svg)](https://github.com/tischda/nosleep-server/releases/latest)
+
+
+# nosleep-server
 
 Windows CLI utility (server) that prevents the computer from entering sleep.
 
@@ -17,18 +25,16 @@ current thread, so this server runs an `ExecStateManager` that is locked to
 a single OS thread. The RPC server uses this `ExecStateManager` to ensure
 consistent state accross calls.
 
-### Install
-
-There are no dependencies.
+## Install
 
 ~~~
 go install github.com/tischda/nosleep-server@latest
 ~~~
 
-### Usage
+## Usage
 
 ~~~
-Usage: nosleep-server [--port <port>] [--display]  | --version | --help
+Usage: nosleep-server [--port <port>] [--display]
 
 Sets ThreadExecutionState to (ES_CONTINUOUS | ES_SYSTEM_REQUIRED) and
 starts an RPC server on 127.0.0.1:9001.
@@ -38,22 +44,24 @@ where possible methods are: Clear, Display, System, Critical, Read and Shutdown.
 
 OPTIONS:
 
-  -d, -display
-        Force display to stay on
-  -h, -help
-        displays this help message
-  -p, -port int
+  -p, --port int
         RPC server listening port (default 9001)
-  -v, -version
+  -d, --display
+        Force display to stay on
+  -?, --help
+        displays this help message
+  -v, --version
         print version and exit
-
-EXAMPLES:
-
-  nosleep-server --port 9015 --display
-
-  will set ThreadExecutionState to (ES_CONTINUOUS | ES_SYSTEM_REQUIRED | ES_DISPLAY_REQUIRED)
-  and start an RPC server listening on 127.0.0.1:9015.
 ~~~
+
+## Examples
+
+~~~
+nosleep-server --port 9015 --display
+~~~
+
+will set ThreadExecutionState to (ES_CONTINUOUS | ES_SYSTEM_REQUIRED | ES_DISPLAY_REQUIRED)
+and start an RPC server listening on 127.0.0.1:9015.
 
 You can test the result like this (requires admin rights):
 
@@ -78,8 +86,7 @@ ACTIVELOCKSCREEN:
 None.
 ~~~
 
-
-### References
+## References
 
 * [tischda/nosleep-client](/tischda/nosleep-client)
 * [mhbitarafan/go_wakelock](/mhbitarafan/go_wakelock)
