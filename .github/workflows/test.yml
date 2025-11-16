@@ -1,7 +1,7 @@
 # This workflow is adapted from:
 # https://github.com/mvdan/github-actions-golang/blob/master/.github/workflows/test.yml
 
-name: Test
+name: test
 permissions:
   contents: read
   pull-requests: read
@@ -9,11 +9,8 @@ permissions:
 on: [push, pull_request]
 
 jobs:
-  test-nocache:
-    strategy:
-      matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
-    runs-on: ${{ matrix.os }}
+  test:
+    runs-on: windows-latest
     steps:
     - uses: actions/checkout@v5
     - uses: actions/setup-go@v6
@@ -22,6 +19,7 @@ jobs:
         cache: false # no point in caching if go.sum is absent
 
     - name: Run tests with coverage
+      shell: cmd
       run: go test -v -race -covermode=atomic -coverprofile="coverage.out" ./...
 
     - name: Upload coverage to Coveralls

@@ -45,7 +45,9 @@ func (m *ExecStateManager) Start() {
 
 			case <-m.managerStopCh:
 				// Clear state on exit
-				SetThreadExecutionState(ES_CONTINUOUS)
+				if _, err := SetThreadExecutionState(ES_CONTINUOUS); err != nil {
+					log.Printf("SetThreadExecutionState error during Stop: %v", err)
+				}
 				// We assume RPC Shutdown has already been requested,
 				// so we don't need to save the previous state here.
 				return

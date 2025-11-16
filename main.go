@@ -95,13 +95,19 @@ EXAMPLES:`)
 
 	// set the initial sleep mode
 	if cfg.display {
-		manager.Display(ExecStateRequest{}, &ExecStateReply{})
+		if err := manager.Display(ExecStateRequest{}, &ExecStateReply{}); err != nil {
+			log.Fatalf("Failed to set initial display state: %v", err)
+		}
 	} else {
-		manager.System(ExecStateRequest{}, &ExecStateReply{})
+		if err := manager.System(ExecStateRequest{}, &ExecStateReply{}); err != nil {
+			log.Fatalf("Failed to set initial system state: %v", err)
+		}
 	}
 
 	// Register RPC server with ExecStateManager methods
-	rpc.Register(manager)
+	if err := rpc.Register(manager); err != nil {
+		log.Fatalf("Failed to register RPC server: %v", err)
+	}
 
 	// Configure listener
 	address := fmt.Sprintf("127.0.0.1:%d", cfg.port)
@@ -117,7 +123,7 @@ EXAMPLES:`)
 	}()
 
 	<-shutdownCh
-	listener.Close()
+	listener.Close() //nolint:errcheck
 
 	log.Println("Server shutdown complete.")
 }
