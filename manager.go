@@ -21,14 +21,14 @@ func (m *ExecStateManager) Start() {
 	m.commandCh = make(chan uint32)
 	m.managerStopCh = make(chan struct{})
 
+	// We want to ensure that the manager is started
+	// before we start processing commands.
+	m.managerStarted.Store(true)
+
 	go func() {
 		// Lock goroutine to its current OS thread
 		runtime.LockOSThread()
 		defer runtime.UnlockOSThread()
-
-		// We want to ensure that the manager is started
-		// before we start processing commands.
-		m.managerStarted.Store(true)
 
 		for {
 			select {
