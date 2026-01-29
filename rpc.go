@@ -49,6 +49,8 @@ func (m *ExecStateManager) Read(req ExecStateRequest, reply *ExecStateReply) err
 // Shuts down the RPC server
 func (m *ExecStateManager) Shutdown(req ExecStateRequest, reply *ExecStateReply) error {
 	log.Println("ExecStateManager.Shutdown - Shutting down RPC server")
-	close(m.rpcShutdownCh)
-	return nil
+
+	// Close the listener to stop accepting new connections, assuming
+	// ExcecStateManager.Stop will be called via defer in main()
+	return m.listener.Close()
 }

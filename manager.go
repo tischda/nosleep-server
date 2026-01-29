@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"net"
 	"runtime"
 	"sync/atomic"
 )
@@ -16,7 +17,7 @@ type ExecStateManager struct {
 	previousState uint32
 	commandCh     chan execStateCommand
 	mgrShutdownCh chan struct{}
-	rpcShutdownCh chan struct{}
+	listener      net.Listener
 }
 
 // Start launches the dedicated OS thread goroutine

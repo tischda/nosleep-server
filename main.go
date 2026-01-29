@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"flag"
 	"fmt"
 	"log"
@@ -97,9 +98,17 @@ EXAMPLES:`)
 		os.Exit(1)
 	}
 
-	// register RPC with state manager
-	rpcShutdownCh := make(chan struct{})
-	manager := &ExecStateManager{rpcShutdownCh: rpcShutdownCh}
+	fmt.Printf("%s %s starting...\n", name, version)
+
+	// Configure listener
+	address := fmt.Sprintf("%s:%d", cfg.address, cfg.port)
+	listener, err := net.Listen(cfg.network, address)
+	if err != nil {
+		log.Fatalf("Failed to listen on %s: %v", address, err)
+	}
+
+	// Configure and start ExecStateManager
+	manager := &ExecStateManager{listener: listener}
 	manager.Start()
 	defer manager.Stop()
 
@@ -119,19 +128,19 @@ EXAMPLES:`)
 		log.Fatalf("Failed to register RPC server: %v", err)
 	}
 
-	// Configure listener
-	address := fmt.Sprintf("%s:%d", cfg.address, cfg.port)
-	listener, err := net.Listen(cfg.network, address)
-	if err != nil {
-		log.Fatalf("Failed to listen on %s: %v", address, err)
+	log.Printf("RPC server listening on %s (%s)", address, cfg.network)
+	for {
+		conn, err := listener.Accept()
+		if err != nil {
+			// Exit cleanly if the listener was intentionally closed.
+			if errors.Is(err, net.ErrClosed) { // Go 1.16+
+				break
+			}
+			// Other errors are real and should be logged/handled.
+			log.Printf("accept error: %v", err)
+			continue
+		}
+		go rpc.ServeConn(conn)
 	}
-	log.Printf("Nosleep RPC server listening on %s (%s)", address, cfg.network)
-
-	// Accept connections until shutdown is triggered
-	go func() {
-		rpc.Accept(listener)
-	}()
-
-	<-rpcShutdownCh
 	log.Println("RPC server shutdown complete.")
 }
