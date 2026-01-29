@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"runtime"
 	"sync/atomic"
@@ -9,21 +8,16 @@ import (
 
 // ExecStateManager controls the ES state on a dedicated OS thread
 type ExecStateManager struct {
-	previousState  uint32
-	commandCh      chan uint32
-	managerStopCh  chan struct{}
-	managerStarted atomic.Bool
-	rpcShutdownCh  chan struct{}
+	previousState uint32
+	commandCh     chan uint32
+	mgrShutdownCh chan struct{}
+	rpcShutdownCh chan struct{}
 }
 
 // Start launches the dedicated OS thread goroutine
 func (m *ExecStateManager) Start() {
 	m.commandCh = make(chan uint32)
-	m.managerStopCh = make(chan struct{})
-
-	// We want to ensure that the manager is started
-	// before we start processing commands.
-	m.managerStarted.Store(true)
+	m.mgrShutdownCh = make(chan struct{})
 
 	go func() {
 		// Lock goroutine to its current OS thread
@@ -42,43 +36,30 @@ func (m *ExecStateManager) Start() {
 				}
 				// Please note that return value is the PREVIOUS state
 				atomic.StoreUint32(&m.previousState, uint32(ret))
-
-			case <-m.managerStopCh:
-				// Clear state on exit
-				if _, err := SetThreadExecutionState(ES_CONTINUOUS); err != nil {
-					log.Printf("SetThreadExecutionState error during Stop: %v", err)
-				}
-				// We assume RPC Shutdown has already been requested,
-				// so we don't need to save the previous state here.
+			case <-m.mgrShutdownCh:
 				return
 			}
 		}
 	}()
 }
 
-// Stop signals the ExecStateManager goroutine to exit
+// Clears state. This function is meant to be called via defer() right after Start().
 func (m *ExecStateManager) Stop() {
-	if !m.managerStarted.Load() {
-		log.Println("ERROR: ExecStateManager not started")
-	} else {
-		close(m.managerStopCh)
+	close(m.mgrShutdownCh)
+
+	if _, err := SetThreadExecutionState(ES_CONTINUOUS); err != nil {
+		log.Printf("SetThreadExecutionState error during Stop: %v", err)
 	}
+	log.Println("ThreadExecutionState cleared.")
 }
 
 // getAtomicState atomically returns the previous flags value
 func (m *ExecStateManager) getAtomicState() uint32 {
-	if !m.managerStarted.Load() {
-		log.Println("ERROR: ExecStateManager not started")
-	}
 	return atomic.LoadUint32(&m.previousState)
 }
 
 // setAtomicState atomically sets the flags value
-func (m *ExecStateManager) setAtomicState(flags uint32, reply *ExecStateReply) error {
-	if !m.managerStarted.Load() {
-		return fmt.Errorf("ExecStateManager not started")
-	}
+func (m *ExecStateManager) setAtomicState(flags uint32, reply *ExecStateReply) {
 	m.commandCh <- flags
 	reply.Flags = m.getAtomicState()
-	return nil
 }

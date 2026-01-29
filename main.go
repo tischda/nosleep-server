@@ -98,20 +98,16 @@ EXAMPLES:`)
 	}
 
 	// register RPC with state manager
-	shutdownCh := make(chan struct{})
-	manager := &ExecStateManager{rpcShutdownCh: shutdownCh}
+	rpcShutdownCh := make(chan struct{})
+	manager := &ExecStateManager{rpcShutdownCh: rpcShutdownCh}
 	manager.Start()
 	defer manager.Stop()
 
 	// set the initial sleep mode
 	if cfg.display {
-		if err := manager.Display(ExecStateRequest{}, &ExecStateReply{}); err != nil {
-			log.Fatalf("Failed to set initial display state: %v", err)
-		}
+		manager.Display(ExecStateRequest{}, &ExecStateReply{})
 	} else {
-		if err := manager.System(ExecStateRequest{}, &ExecStateReply{}); err != nil {
-			log.Fatalf("Failed to set initial system state: %v", err)
-		}
+		manager.System(ExecStateRequest{}, &ExecStateReply{})
 	}
 
 	// Register RPC server with ExecStateManager methods
@@ -132,8 +128,6 @@ EXAMPLES:`)
 		rpc.Accept(listener)
 	}()
 
-	<-shutdownCh
-	listener.Close() //nolint:errcheck
-
-	log.Println("Server shutdown complete.")
+	<-rpcShutdownCh
+	log.Println("RPC server shutdown complete.")
 }
