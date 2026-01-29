@@ -105,9 +105,9 @@ EXAMPLES:`)
 
 	// set the initial sleep mode
 	if cfg.display {
-		manager.Display(ExecStateRequest{}, &ExecStateReply{})
+		manager.Display(ExecStateRequest{}, &ExecStateReply{}) //nolint:errcheck
 	} else {
-		manager.System(ExecStateRequest{}, &ExecStateReply{})
+		manager.System(ExecStateRequest{}, &ExecStateReply{}) //nolint:errcheck
 	}
 
 	// Register RPC server with ExecStateManager methods
