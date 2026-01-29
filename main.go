@@ -105,9 +105,13 @@ EXAMPLES:`)
 
 	// set the initial sleep mode
 	if cfg.display {
-		manager.Display(ExecStateRequest{}, &ExecStateReply{}) //nolint:errcheck
+		if err := manager.Display(ExecStateRequest{}, &ExecStateReply{}); err != nil {
+			log.Fatalf("Failed to set initial display state: %v", err)
+		}
 	} else {
-		manager.System(ExecStateRequest{}, &ExecStateReply{}) //nolint:errcheck
+		if err := manager.System(ExecStateRequest{}, &ExecStateReply{}); err != nil {
+			log.Fatalf("Failed to set initial system state: %v", err)
+		}
 	}
 
 	// Register RPC server with ExecStateManager methods

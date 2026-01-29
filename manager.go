@@ -6,17 +6,22 @@ import (
 	"sync/atomic"
 )
 
+type execStateCommand struct {
+	flags   uint32
+	errChan chan error
+}
+
 // ExecStateManager controls the ES state on a dedicated OS thread
 type ExecStateManager struct {
 	previousState uint32
-	commandCh     chan uint32
+	commandCh     chan execStateCommand
 	mgrShutdownCh chan struct{}
 	rpcShutdownCh chan struct{}
 }
 
 // Start launches the dedicated OS thread goroutine
 func (m *ExecStateManager) Start() {
-	m.commandCh = make(chan uint32)
+	m.commandCh = make(chan execStateCommand)
 	m.mgrShutdownCh = make(chan struct{})
 
 	go func() {
@@ -26,16 +31,17 @@ func (m *ExecStateManager) Start() {
 
 		for {
 			select {
-			case flags := <-m.commandCh:
+			case cmd := <-m.commandCh:
 				// Call Windows API on this thread
-				ret, err := SetThreadExecutionState(flags | ES_CONTINUOUS)
+				ret, err := SetThreadExecutionState(cmd.flags | ES_CONTINUOUS)
 				if err != nil {
 					log.Printf("SetThreadExecutionState error: %v", err)
 					atomic.StoreUint32(&m.previousState, 0)
-					continue
+				} else {
+					// Please note that return value is the PREVIOUS state
+					atomic.StoreUint32(&m.previousState, uint32(ret))
 				}
-				// Please note that return value is the PREVIOUS state
-				atomic.StoreUint32(&m.previousState, uint32(ret))
+				cmd.errChan <- err
 			case <-m.mgrShutdownCh:
 				return
 			}
@@ -59,7 +65,10 @@ func (m *ExecStateManager) getAtomicState() uint32 {
 }
 
 // setAtomicState atomically sets the flags value
-func (m *ExecStateManager) setAtomicState(flags uint32, reply *ExecStateReply) {
-	m.commandCh <- flags
+func (m *ExecStateManager) setAtomicState(flags uint32, reply *ExecStateReply) error {
+	errChan := make(chan error)
+	m.commandCh <- execStateCommand{flags: flags, errChan: errChan}
+	err := <-errChan
 	reply.Flags = m.getAtomicState()
+	return err
 }
