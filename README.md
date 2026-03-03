@@ -2,7 +2,7 @@
 [![Test Status](https://github.com/tischda/nosleep-server/actions/workflows/test.yml/badge.svg)](https://github.com/tischda/nosleep-server/actions/workflows/test.yml)
 [![Coverage Status](https://coveralls.io/repos/tischda/nosleep-server/badge.svg)](https://coveralls.io/r/tischda/nosleep-server)
 [![Linter Status](https://github.com/tischda/nosleep-server/actions/workflows/linter.yml/badge.svg)](https://github.com/tischda/nosleep-server/actions/workflows/linter.yml)
-[![License](https://img.shields.io/github/license/tischda/nosleep-server)](/LICENSE)
+[![License](https://img.shields.io/github/license/tischda/nosleep-server.svg)](/LICENSE)
 [![Release](https://img.shields.io/github/release/tischda/nosleep-server.svg)](https://github.com/tischda/nosleep-server/releases/latest)
 
 
