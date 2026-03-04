@@ -53,4 +53,15 @@ func TestInitFlags(t *testing.T) {
 	if !cfg.version {
 		t.Error("Expected version flag to be true")
 	}
+
+	// Verify --log is parsed correctly.
+	flag.CommandLine = flag.NewFlagSet(os.Args[0], flag.ExitOnError)
+	cfg = initFlags()
+	err = flag.CommandLine.Parse([]string{"--log", "nosleep.log"})
+	if err != nil {
+		t.Fatalf("Failed to parse --log flag: %v", err)
+	}
+	if cfg.logPath != "nosleep.log" {
+		t.Errorf("Expected logPath to be nosleep.log, got %q", cfg.logPath)
+	}
 }

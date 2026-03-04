@@ -54,6 +54,8 @@ OPTIONS:
           RPC server listening port (default 9001)
   -d, --display
           Force display to stay on
+  -l, --log path
+          Write logs to a file instead of stdout
   -?, --help
           displays this help message
   -v, --version

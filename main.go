@@ -23,6 +23,7 @@ type Config struct {
 	address string
 	port    int
 	display bool
+	logPath string
 	help    bool
 	version bool
 }
@@ -37,6 +38,8 @@ func initFlags() *Config {
 	flag.IntVar(&cfg.port, "port", DEFAULT_PORT, "RPC server listening port")
 	flag.BoolVar(&cfg.display, "d", false, "")
 	flag.BoolVar(&cfg.display, "display", false, "Force display to stay on")
+	flag.StringVar(&cfg.logPath, "l", "", "")
+	flag.StringVar(&cfg.logPath, "log", "", "Write logs to a file instead of stdout")
 	flag.BoolVar(&cfg.help, "?", false, "")
 	flag.BoolVar(&cfg.help, "help", false, "displays this help message")
 	flag.BoolVar(&cfg.version, "v", false, "")
@@ -69,6 +72,8 @@ OPTIONS:
           RPC server listening port (default 9001)
   -d, --display
           Force display to stay on
+  -l, --log path
+          Write logs to a file instead of stdout
   -?, --help
           displays this help message
   -v, --version
@@ -98,6 +103,17 @@ EXAMPLES:`)
 		os.Exit(1)
 	}
 
-	fmt.Printf("%s %s starting...\n", name, version)
+	if cfg.logPath != "" {
+		logFile, err := os.OpenFile(cfg.logPath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0o644)
+		if err != nil {
+			log.Fatalf("Failed to open log file %s: %v", cfg.logPath, err)
+		}
+		defer logFile.Close()
+		log.SetOutput(logFile)
+		log.SetFlags(log.LstdFlags)
+		log.Printf("----------------- SERVER START [pid=%d] -----------------", os.Getpid())
+	}
+
+	log.Printf("%s %s starting...\n", name, version)
 	serve(cfg)
 }
