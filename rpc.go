@@ -4,13 +4,14 @@ import (
 	"log"
 )
 
-// Request types for RPC
+// Request types for RPC (make sure to keep them in sync with the client)
 type ExecStateRequest struct {
-	Flags uint32
+	Process int
 }
 
 type ExecStateReply struct {
-	Flags uint32
+	Flags     uint32
+	Processes []int
 }
 
 // IMPORTANT: All methods return error to comply with net/rpc requirements
@@ -43,10 +44,29 @@ func (m *ExecStateManager) Critical(req ExecStateRequest, reply *ExecStateReply)
 func (m *ExecStateManager) Read(req ExecStateRequest, reply *ExecStateReply) error {
 	log.Println("ExecStateManager.Read — Returning previous flags")
 	reply.Flags = m.getAtomicState()
+	reply.Processes = m.getRegisteredProcesses()
 	return nil
 }
 
-// Shuts down the RPC server
+// Registers a process.
+func (m *ExecStateManager) Register(req ExecStateRequest, reply *ExecStateReply) error {
+	log.Println("ExecStateManager.Register — Register process:", req.Process)
+	m.registerProcess(req.Process)
+	return nil
+}
+
+// Unregisters a process.
+func (m *ExecStateManager) Unregister(req ExecStateRequest, reply *ExecStateReply) error {
+	log.Println("ExecStateManager.Unregister — Unregister process:", req.Process)
+	m.unregisterProcess(req.Process)
+	if !m.hasRegisteredProcesses() {
+		log.Println("ExecStateManager.Unregister — All processes unregistered")
+		return m.Shutdown(req, reply)
+	}
+	return nil
+}
+
+// Shuts down the RPC server.
 func (m *ExecStateManager) Shutdown(req ExecStateRequest, reply *ExecStateReply) error {
 	log.Println("ExecStateManager.Shutdown - Shutting down RPC server")
 

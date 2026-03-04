@@ -4,6 +4,7 @@ import (
 	"log"
 	"net"
 	"runtime"
+	"sync"
 	"sync/atomic"
 )
 
@@ -18,12 +19,17 @@ type ExecStateManager struct {
 	commandCh     chan execStateCommand
 	mgrShutdownCh chan struct{}
 	listener      net.Listener
+	processesMu   sync.Mutex
+	processes     map[int]struct{}
 }
 
 // Start launches the dedicated OS thread goroutine
 func (m *ExecStateManager) Start() {
 	m.commandCh = make(chan execStateCommand)
 	m.mgrShutdownCh = make(chan struct{})
+	if m.processes == nil {
+		m.processes = make(map[int]struct{})
+	}
 
 	go func() {
 		// Lock goroutine to its current OS thread
@@ -72,4 +78,36 @@ func (m *ExecStateManager) setAtomicState(flags uint32, reply *ExecStateReply) e
 	err := <-errChan
 	reply.Flags = m.getAtomicState()
 	return err
+}
+
+func (m *ExecStateManager) getRegisteredProcesses() []int {
+	m.processesMu.Lock()
+	defer m.processesMu.Unlock()
+
+	var pids []int
+	for pid := range m.processes {
+		pids = append(pids, pid)
+	}
+	return pids
+}
+
+func (m *ExecStateManager) registerProcess(pid int) {
+	m.processesMu.Lock()
+	defer m.processesMu.Unlock()
+
+	m.processes[pid] = struct{}{}
+}
+
+func (m *ExecStateManager) unregisterProcess(pid int) {
+	m.processesMu.Lock()
+	defer m.processesMu.Unlock()
+
+	delete(m.processes, pid)
+}
+
+func (m *ExecStateManager) hasRegisteredProcesses() bool {
+	m.processesMu.Lock()
+	defer m.processesMu.Unlock()
+
+	return len(m.processes) > 0
 }

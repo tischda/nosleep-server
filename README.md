@@ -10,20 +10,19 @@
 
 Windows CLI utility (server) that prevents the computer from entering sleep.
 
-The server will prevent the computer from going to sleep by setting
-`SetThreadExecutionState`. The client will communication via RPC with
-the server to change the sleep mode or shutdown the server.
+The server will prevent the computer from going to sleep by setting `SetThreadExecutionState`.
+The client will communication via RPC with the server to change the sleep mode or shutdown
+the server.
 
 The main use case is to prevent sleep during a long running task:
 
-1. start nosleep-server in the background
+1. start `nosleep-server` in the background
 2. run task (eg. backup script)
 3. nosleep-client calls server with shutdown request
 
-It's important to note that `SetThreadExecutionState` only applies to the
-current thread, so this server runs an `ExecStateManager` that is locked to
-a single OS thread. The RPC server uses this `ExecStateManager` to ensure
-consistent state accross calls.
+It's important to note that `SetThreadExecutionState` only applies to the current thread, so
+this server runs an `ExecStateManager` that is locked to a single OS thread. The RPC server
+uses this `ExecStateManager` to ensure consistent state accross calls.
 
 ## Install
 
@@ -34,13 +33,16 @@ go install github.com/tischda/nosleep-server@latest
 ## Usage
 
 ~~~
-Usage: nosleep-server [--port <port>] [--display]
+Usage: nosleep-server [OPTIONS]
 
 Sets ThreadExecutionState to (ES_CONTINUOUS | ES_SYSTEM_REQUIRED) and
-starts an RPC server on 127.0.0.1:9001.
+starts an RPC server on ADDRESS:PORT (default: 127.0.0.1:9001).
 
 You can manage the server using RPC calls to control thread execution states
-where possible methods are: Clear, Display, System, Critical, Read and Shutdown.
+where possible commands are: Clear, Display, System, Critical, Read and Shutdown.
+
+Another way to control the server is by registering/unregistering processes.
+The server will automatically shut down when the last process is unregistered.
 
 OPTIONS:
 
@@ -55,7 +57,7 @@ OPTIONS:
   -?, --help
           displays this help message
   -v, --version
-        print version and exit
+          print version and exit
 ~~~
 
 ## Examples

@@ -124,3 +124,78 @@ func TestRPCShutdown(t *testing.T) {
 		t.Errorf("Expected an error when calling RPC on a shutdown server, but got %v", err)
 	}
 }
+
+func TestRPCRegister(t *testing.T) {
+	manager, listener, client := setupTestServer(t)
+	defer listener.Close()
+	defer client.Close()
+	defer manager.Stop()
+
+	registerReqs := []ExecStateRequest{{Process: 101}, {Process: 202}}
+	for _, req := range registerReqs {
+		var reply ExecStateReply
+		if err := client.Call("ExecStateManager.Register", req, &reply); err != nil {
+			t.Fatalf("Register RPC call failed for pid %d: %v", req.Process, err)
+		}
+	}
+
+	var readReply ExecStateReply
+	if err := client.Call("ExecStateManager.Read", ExecStateRequest{}, &readReply); err != nil {
+		t.Fatalf("Read RPC call failed: %v", err)
+	}
+
+	if len(readReply.Processes) != len(registerReqs) {
+		t.Fatalf("Expected %d registered processes, got %d", len(registerReqs), len(readReply.Processes))
+	}
+
+	seen := make(map[int]bool, len(readReply.Processes))
+	for _, pid := range readReply.Processes {
+		seen[pid] = true
+	}
+
+	for _, req := range registerReqs {
+		if !seen[req.Process] {
+			t.Errorf("Expected pid %d in registered process list", req.Process)
+		}
+	}
+}
+
+func TestRPCUnregister(t *testing.T) {
+	manager, listener, client := setupTestServer(t)
+	defer manager.Stop()
+
+	registerReqs := []ExecStateRequest{{Process: 111}, {Process: 222}}
+	for _, req := range registerReqs {
+		var reply ExecStateReply
+		if err := client.Call("ExecStateManager.Register", req, &reply); err != nil {
+			t.Fatalf("Register RPC call failed for pid %d: %v", req.Process, err)
+		}
+	}
+
+	var unregisterReply ExecStateReply
+	if err := client.Call("ExecStateManager.Unregister", ExecStateRequest{Process: 111}, &unregisterReply); err != nil {
+		t.Fatalf("Unregister RPC call failed for first pid: %v", err)
+	}
+
+	var readReply ExecStateReply
+	if err := client.Call("ExecStateManager.Read", ExecStateRequest{}, &readReply); err != nil {
+		t.Fatalf("Read RPC call failed after first unregister: %v", err)
+	}
+
+	if len(readReply.Processes) != 1 || readReply.Processes[0] != 222 {
+		t.Fatalf("Expected only pid 222 after first unregister, got %v", readReply.Processes)
+	}
+
+	err := client.Call("ExecStateManager.Unregister", ExecStateRequest{Process: 222}, &unregisterReply)
+	if err != nil && err != rpc.ErrShutdown {
+		t.Fatalf("Unregister RPC call failed for last pid with unexpected error: %v", err)
+	}
+
+	listener.Close()
+	client.Close()
+
+	err = client.Call("ExecStateManager.Read", ExecStateRequest{}, &readReply)
+	if err != rpc.ErrShutdown {
+		t.Errorf("Expected rpc.ErrShutdown after last unregister, got %v", err)
+	}
+}

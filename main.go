@@ -54,7 +54,10 @@ Sets ThreadExecutionState to (ES_CONTINUOUS | ES_SYSTEM_REQUIRED) and
 starts an RPC server on ADDRESS:PORT (default: 127.0.0.1:`+fmt.Sprintf("%d", DEFAULT_PORT)+`).
 
 You can manage the server using RPC calls to control thread execution states
-where possible methods are: Clear, Display, System, Critical, Read and Shutdown.
+where possible commands are: Clear, Display, System, Critical, Read and Shutdown.
+
+Another way to control the server is by registering/unregistering processes.
+The server will automatically shut down when the last process is unregistered.
 
 OPTIONS:
 
