@@ -6,6 +6,8 @@ import (
 	"log"
 	"net"
 	"net/rpc"
+	"os"
+	"os/signal"
 )
 
 func serve(cfg *Config) {
@@ -15,6 +17,24 @@ func serve(cfg *Config) {
 	if err != nil {
 		log.Fatalf("Failed to listen on %s: %v", address, err)
 	}
+
+	interruptCh := make(chan os.Signal, 1)
+	signal.Notify(interruptCh, os.Interrupt)
+	defer signal.Stop(interruptCh)
+
+	doneCh := make(chan struct{})
+	defer close(doneCh)
+
+	go func() {
+		select {
+		case <-interruptCh:
+			log.Println("Received CTRL+C, shutting down server")
+			if closeErr := listener.Close(); closeErr != nil && !errors.Is(closeErr, net.ErrClosed) {
+				log.Printf("listener close error during shutdown: %v", closeErr)
+			}
+		case <-doneCh:
+		}
+	}()
 
 	// Configure and start ExecStateManager
 	manager := &ExecStateManager{listener: listener}
