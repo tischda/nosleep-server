@@ -108,7 +108,7 @@ EXAMPLES:`)
 		if err != nil {
 			log.Fatalf("Failed to open log file %s: %v", cfg.logPath, err)
 		}
-		defer logFile.Close()
+		defer logFile.Close() //nolint:errcheck
 		log.SetOutput(logFile)
 		log.SetFlags(log.LstdFlags)
 		log.Printf("----------------- SERVER START [pid=%d] -----------------", os.Getpid())

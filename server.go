@@ -62,7 +62,7 @@ func serve(cfg *Config) {
 		conn, err := listener.Accept()
 		if err != nil {
 			// Exit cleanly if the listener was intentionally closed.
-			if errors.Is(err, net.ErrClosed) { // Go 1.16+
+			if errors.Is(err, net.ErrClosed) {
 				break
 			}
 			// Other errors are real and should be logged/handled.
