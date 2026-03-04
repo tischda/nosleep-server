@@ -1,5 +1,11 @@
 # Changelog
 
+## [v1.2.0] - 4 March 2026
+
+* Add Register/Unregister commands
+* Log output to file (--log option)
+* Graceful server shutdown from console
+
 ## [v1.1.1] - 30 January 2026
 
 * Graceful RCP server shutdown

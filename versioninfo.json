@@ -21,10 +21,10 @@
     "StringFileInfo": {
         "Comments": "",
         "CompanyName": "",
-        "FileDescription": "Prevents machine from going to sleep",
+        "FileDescription": "Nosleep server",
         "FileVersion": "",
         "InternalName": "",
-        "LegalCopyright": "© 2025 Daniel TISCHER",
+        "LegalCopyright": "© 2026 Daniel TISCHER",
         "LegalTrademarks": "",
         "OriginalFilename": "nosleep-server.exe",
         "PrivateBuild": "",
