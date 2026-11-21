@@ -1,6 +1,6 @@
 # ---------------------------------------------------------------------------
 # Makefile for CLI utilities
-# 
+#
 # Escape '#' and '[' characters with '\', and '$' characters with '$$'
 # ---------------------------------------------------------------------------
 
@@ -19,17 +19,21 @@ VER_BUILD = 0  # Set default build number if needed
 
 MAKEFLAGS += --no-print-directory
 
-## This is faster than extracting variables from git each time
+# This is faster than extracting variables from git each time
 FASTBUILD_CMD=go build -ldflags='-s -w -X main.name=$(PROJECT_NAME) -X main.version=v1.0.0-dirty -X main.date=$(BUILD_DATE) -X main.commit=12345'
 
-all: dist
+all: build
 
 ## build: build project
-build: goversioninfo
+build:
+	$(FASTBUILD_CMD)
+
+## dist: build project for release (with version info)
+dist: goversioninfo
 	go build $(LDFLAGS)
 
-## watch: watch for changes and rebuild (a first build is necessary to create .syso files)
-watch: build
+## watch: watch for changes and rebuild
+watch: goversioninfo
 	@start watchexec.exe --postpone --timings --exts go \""$(FASTBUILD_CMD)"\" &
 
 goversioninfo:
@@ -89,9 +93,6 @@ release: goversioninfo
 	@echo ----
 	@goreleaser release --clean --release-notes=releaseinfo
 	@rm -f releaseinfo
-
-## dist: clean and build
-dist: clean build
 
 ## clean: remove temporary files
 clean:

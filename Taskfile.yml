@@ -1,4 +1,4 @@
-version: '3'
+version: "3"
 
 vars:
   PROJECT_NAME:
@@ -25,13 +25,18 @@ tasks:
   build:
     desc: Build the project
     cmds:
+      - '{{.FASTBUILD_CMD}}'
+
+  dist:
+    desc: build project for release (with version info)
+    cmds:
       - task: goversioninfo
       - go build {{.LDFLAGS}}
 
   watch:
-    desc: Watch for changes and rebuild (a first build is necessary to create .syso files)
+    desc: Watch for changes and rebuild
     cmds:
-      - task: build
+      - task: goversioninfo
       - cmd /c start watchexec.exe --postpone --timings --exts go \""{{.FASTBUILD_CMD}}"\"
 
   goversioninfo:
@@ -75,12 +80,6 @@ tasks:
       - goreleaser release --clean --release-notes=releaseinfo
       - rm -f releaseinfo
 
-  dist:
-    desc: Clean and build
-    cmds:
-      - task: clean
-      - task: build
-
   clean:
     desc: Clean build artifacts
     cmds:
@@ -100,4 +99,3 @@ tasks:
       - echo
       - echo "CHANGELOG:"
       - sed '1,/\#\# \[${VERSION}/d;/^\#\# /Q' CHANGELOG.md
-
